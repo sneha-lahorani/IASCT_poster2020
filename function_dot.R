@@ -2,7 +2,7 @@
 
 # Function
 
-dot <- function(type = "FIRST", dsetin, groupvar, arrangevar, dtypeyn = "Y") {
+dot <- function(type = "FIRST", dsetin, groupvar, arrangevar, dtype = "BC") {
 
   # Function to load/install packages (where needed)
   ipak <- function(pkg) {
@@ -33,15 +33,15 @@ dot <- function(type = "FIRST", dsetin, groupvar, arrangevar, dtypeyn = "Y") {
     warning("Please input type as 'first' or 'last' only. Default has been taken as 'first'.")
   }
 
-  if (toupper(dtypeyn) == "Y") {
+  if (toupper(dtype) %in% c("BC", "WC")) {
     two <- one %>%
-      mutate(DTYPE = if_else(toupper(type) == "FIRST", "BC",
-        if_else(toupper(type) == "LAST", "WC", "")
+      mutate(DTYPE = if_else(toupper(dtype) == "BC", "BC",
+        if_else(toupper(dtype) == "WC", "WC", "")
       )) %>%
       bind_rows(dsetin) %>%
       mutate(DTYPE = if_else(!DTYPE %in% c("BC", "WC"), "", DTYPE))
   }
-  else if (toupper(dtypeyn) == "N") {
+  else if (!toupper(dtype) %in% c("BC", "WC")) {
     two <- one %>%
       bind_rows(dsetin)
   }
@@ -54,10 +54,18 @@ adlb <- gsktable::adlb %>%
   select(USUBJID, AVISITN, AVISIT, PARAMCD, PARAM, AVAL, AVALC)
 
 # Example
-example <- dot(
-  type = "first", # Input "first" or "last", else a warning is displayed
+example1 <- dot(
+  type = "first", # Input "first" [default]/"last", else a warning is displayed
   dsetin = adlb, # Input data frame
   arrangevar = c("PARAMCD", "USUBJID", "AVAL"), # Variables to sort by
   groupvar = c("PARAMCD", "USUBJID"), # Variables to group by
-  dtypeyn = "Y" # Parameter to add DTYPE. "Y" if yes (default) & "N" if no
+  dtype = "BC" # Parameter for Worst ("WC")/Best case ("BC") [default].
+)
+
+example2 <- dot(
+  type = "last", # Input "first" [default]/"last", else a warning is displayed
+  dsetin = example1, # Input data frame
+  arrangevar = c("PARAMCD", "USUBJID", "AVAL"), # Variables to sort by
+  groupvar = c("PARAMCD", "USUBJID"), # Variables to group by
+  dtype = "WC" # Parameter for Worst ("WC")/Best case ("BC") [default].
 )
